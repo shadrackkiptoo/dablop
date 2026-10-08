@@ -78,7 +78,7 @@ def get_latest_release_version(force=False):
             return state.latest_release_version_cache
         if not force and (not state.latest_release_version_cache) and state.latest_release_cache_error and (now < state.latest_release_error_expires_at):
             raise RuntimeError(state.latest_release_cache_error)
-        request = urllib.request.Request('https://api.github.com/repos/shadrackkiptoo/pissoff/releases/latest', headers={'Accept': 'application/vnd.github+json', 'User-Agent': 'KeyboardService-server'})
+        request = urllib.request.Request('https://api.github.com/repos/shadrackkiptoo/dablop/releases/latest', headers={'Accept': 'application/vnd.github+json', 'User-Agent': 'KeyboardService-server'})
         try:
             with urllib.request.urlopen(request, timeout=15) as response:
                 release = json.loads(response.read().decode('utf-8'))

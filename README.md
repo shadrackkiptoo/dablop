@@ -65,15 +65,46 @@ Type a message and press Enter. It should appear in the browser.
    - Start: `gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:$PORT`
 4. Open the Render service URL in a browser.
 
-After deploying the control and activity features, apply the database schema
-from your private migration copy so the `device_commands` and `audit_events`
-tables exist. SQL migration files are intentionally excluded from this public
-repository. Rebuild and
+After deploying the control and activity features, run the committed
+[migrations/000_all.sql](migrations/000_all.sql) in the Supabase SQL Editor so
+the `device_commands` and `audit_events` tables exist. Rebuild and
 reinstall the desktop client from the updated `client.py`; older clients keep
 the original controls but cannot acknowledge commands or use pause, resume,
 restart, lock, or open dashboard image and document attachments.
 
 Make sure the deployed service contains the latest `app.py` and `web/` files.
+
+### Render Environment Variables
+
+Add these in the Render service under **Environment**. Use **Generate Value**
+for the secret values.
+
+Required:
+
+```text
+DATABASE_URL              # Supabase PostgreSQL connection string
+SUPABASE_URL              # https://<project-ref>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY # Supabase server-only service-role key
+INGEST_API_KEY            # shared secret for desktop client requests
+APP_USERNAME              # dashboard login username
+APP_PASSWORD              # dashboard login password
+APP_SESSION_SECRET        # long random session-signing secret
+```
+
+Optional:
+
+```text
+SITE_URL
+TELEGRAM_BOT_TOKEN
+TELEGRAM_CHAT_ID
+TELEGRAM_UPTIME_INTERVAL_SECONDS
+BUY_ME_A_COFFEE_URL
+MONITORED_APP_PATTERNS
+MONITORED_SITE_PATTERNS
+```
+
+Never put `SUPABASE_SERVICE_ROLE_KEY`, passwords, or session secrets in the
+desktop client, browser code, or a committed `.env` file.
 
 ## Configure Telegram Uptime Notifications
 
