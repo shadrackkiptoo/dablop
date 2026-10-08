@@ -65,7 +65,7 @@ CONFIG_PATH = os.path.join(INSTALL_DIR, "config.json")
 
 
 def load_site_url():
-    default_url = "https://pissoff.onrender.com"
+    default_url = "https://dablop.onrender.com"
     try:
         if os.path.exists(CONFIG_PATH):
             with open(CONFIG_PATH, "r", encoding="utf-8") as config_file:

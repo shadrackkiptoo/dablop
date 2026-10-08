@@ -90,7 +90,7 @@ INGEST_API_KEY            # shared secret for desktop client requests
 APP_USERNAME              # dashboard login username
 APP_PASSWORD              # dashboard login password
 APP_SESSION_SECRET        # long random session-signing secret
-SITE_URL                  # public Render URL used by desktop clients
+SITE_URL=https://dablop.onrender.com # public Render URL used by desktop clients
 TELEGRAM_BOT_TOKEN        # Telegram bot token
 TELEGRAM_CHAT_ID          # Telegram destination chat ID
 TELEGRAM_UPTIME_INTERVAL_SECONDS # uptime notification interval, minimum 60
@@ -273,7 +273,9 @@ If the website is live but empty, check the client URL:
 echo $env:KEY_FEED_URL
 ```
 
-It must be `https://windows-defender-cf8n.onrender.com`. Also check `https://windows-defender-cf8n.onrender.com/health`; it should return JSON containing `"ok": true`. Restart the client, type a message, and press Enter.
+It must be `https://dablop.onrender.com`. Also check
+`https://dablop.onrender.com/health`; it should return JSON containing `"ok": true`.
+Restart the client, type a message, and press Enter.
 
 The service keeps the latest 200 messages in memory. Configure Supabase as described above so messages survive Render restarts and redeploys. `text.txt` is only the local fallback and is ignored by Git.
 

