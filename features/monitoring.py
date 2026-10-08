@@ -33,7 +33,7 @@ from .state import state
 async def health():
     return JSONResponse({
         'ok': True,
-        'started_at': state.SERVICE_STARTED_AT,
+        'started_at': int(state.SERVICE_STARTED_AT * 1000),
         'uptime_seconds': max(0, int(time.time() - state.SERVICE_STARTED_AT)),
         'count': len(state.messages),
     })
