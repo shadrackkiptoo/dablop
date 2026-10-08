@@ -59,8 +59,8 @@ Type a message and press Enter. It should appear in the browser.
 ## Deploy to Render
 
 1. Push the project to GitHub. `text.txt` is ignored by `.gitignore`.
-2. Create a Render Web Service from the repository.
-3. Render uses `render.yaml` with these commands:
+2. Create a Render Web Service from the repository and use the Blueprint file.
+3. Render reads `render.yaml`, creates all environment-variable fields, and uses:
    - Build: `pip install -r requirements.txt`
    - Start: `gunicorn -k uvicorn.workers.UvicornWorker app:app --bind 0.0.0.0:$PORT`
 4. Open the Render service URL in a browser.
@@ -76,8 +76,9 @@ Make sure the deployed service contains the latest `app.py` and `web/` files.
 
 ### Render Environment Variables
 
-Add these in the Render service under **Environment**. Use **Generate Value**
-for the secret values.
+The `render.yaml` Blueprint creates every field below with `sync: false`. Paste
+or generate the values in Render under **Environment**; secret values are never
+stored in this repository.
 
 Required:
 

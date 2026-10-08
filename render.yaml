@@ -21,3 +21,17 @@ services:
         sync: false
       - key: APP_SESSION_SECRET
         sync: false
+      - key: SITE_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: TELEGRAM_UPTIME_INTERVAL_SECONDS
+        sync: false
+      - key: BUY_ME_A_COFFEE_URL
+        sync: false
+      - key: MONITORED_APP_PATTERNS
+        sync: false
+      - key: MONITORED_SITE_PATTERNS
+        sync: false
