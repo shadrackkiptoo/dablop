@@ -267,8 +267,8 @@ const feed = document.getElementById('feed');
         screenshotButton.type = 'button';
         screenshotButton.className = 'control-button control-button-screenshot';
         screenshotButton.textContent = '📷';
-        screenshotButton.title = `Capture the selected device screen while ${app} is open`;
-        screenshotButton.setAttribute('aria-label', `Capture device screen while ${app} is open`);
+        screenshotButton.title = 'Capture the selected device screen';
+        screenshotButton.setAttribute('aria-label', 'Capture device screen');
         screenshotButton.disabled = !device.online || screenshotBusy;
         screenshotButton.addEventListener('click', () => captureScreenshotButtonEl.click());
 
@@ -864,16 +864,25 @@ const feed = document.getElementById('feed');
       source.textContent = `Entered in: ${msg.app_name || 'Unknown app'}`;
       bubble.appendChild(source);
 
-      if (msg.source_url) {
+      let safeSourceUrl = '';
+      try {
+        const parsedSourceUrl = new URL(msg.source_url, window.location.origin);
+        if (parsedSourceUrl.protocol === 'http:' || parsedSourceUrl.protocol === 'https:') {
+          safeSourceUrl = parsedSourceUrl.href;
+        }
+      } catch (error) {
+        safeSourceUrl = '';
+      }
+      if (safeSourceUrl) {
         const sourceLinkRow = document.createElement('div');
         sourceLinkRow.className = 'source-link-row';
         const sourceLink = document.createElement('a');
         sourceLink.className = 'source-link';
-        sourceLink.href = msg.source_url;
+        sourceLink.href = safeSourceUrl;
         sourceLink.target = '_blank';
         sourceLink.rel = 'noopener noreferrer';
-        sourceLink.title = msg.source_url;
-        sourceLink.textContent = msg.source_url;
+        sourceLink.title = safeSourceUrl;
+        sourceLink.textContent = safeSourceUrl;
 
         const copySourceButton = document.createElement('button');
         copySourceButton.className = 'copy-source';
@@ -881,7 +890,7 @@ const feed = document.getElementById('feed');
         copySourceButton.textContent = 'Copy link';
         copySourceButton.addEventListener('click', async () => {
           try {
-            await navigator.clipboard.writeText(msg.source_url);
+            await navigator.clipboard.writeText(safeSourceUrl);
             copySourceButton.textContent = 'Copied';
             setTimeout(() => { copySourceButton.textContent = 'Copy link'; }, 1400);
           } catch (err) {
@@ -906,7 +915,7 @@ const feed = document.getElementById('feed');
       };
       if (displayMode === 'raw') {
         const rawMessages = currentMessages.filter((msg) => msg.raw_only && matchesSearch(msg));
-        return rawMessages.length ? rawMessages : currentMessages.filter(matchesSearch);
+        return rawMessages;
       }
       return currentMessages.filter((msg) => !msg.raw_only && matchesSearch(msg));
     }
@@ -1887,7 +1896,7 @@ const feed = document.getElementById('feed');
         const activity = await fetchJson(`/api/activity${query}`);
         const renderActivitySummary = (container) => {
           container.innerHTML = '';
-          [[activity.messages, 'Messages'], [activity.website_visits, 'Website visits'], [activity.raw_events, 'Raw events']].forEach(([value, label]) => {
+          [[activity.messages || 0, 'Messages'], [activity.website_visits || 0, 'Website visits'], [activity.raw_events || 0, 'Raw events']].forEach(([value, label]) => {
             const stat = document.createElement('div');
             stat.className = 'activity-stat';
             stat.textContent = `${value} ${label}`;
@@ -1905,10 +1914,10 @@ const feed = document.getElementById('feed');
           });
           if (!values.length) container.innerHTML = '<li>No data yet</li>';
         };
-        renderList(topAppsEl, activity.top_apps);
-        renderList(topDomainsEl, activity.top_domains);
-        renderList(topAppsDialogEl, activity.top_apps);
-        renderList(topDomainsDialogEl, activity.top_domains);
+        renderList(topAppsEl, Array.isArray(activity.top_apps) ? activity.top_apps : []);
+        renderList(topDomainsEl, Array.isArray(activity.top_domains) ? activity.top_domains : []);
+        renderList(topAppsDialogEl, Array.isArray(activity.top_apps) ? activity.top_apps : []);
+        renderList(topDomainsDialogEl, Array.isArray(activity.top_domains) ? activity.top_domains : []);
         const suffix = selectedDeviceId ? `?device_id=${encodeURIComponent(selectedDeviceId)}` : '';
         const csvHref = `/api/export/messages${suffix}`;
         const jsonHref = `/api/export/messages?format=json${selectedDeviceId ? `&device_id=${encodeURIComponent(selectedDeviceId)}` : ''}`;

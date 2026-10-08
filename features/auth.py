@@ -44,11 +44,9 @@ async def enforce_login_for_dashboard(request: Request, call_next):
     if path.startswith('/health'):
         return await call_next(request)
     if path.startswith('/api/devices/'):
-        if path in {'/api/devices/heartbeat', '/api/devices/screenshot-upload', '/api/devices/screenshot-status', '/api/devices/offline'} or path.startswith(('/api/devices/media/', '/api/devices/documents/')) or ('/commands/' in path and path.endswith('/ack')):
+        if path in {'/api/devices/heartbeat', '/api/devices/screenshot-upload', '/api/devices/screenshot-status', '/api/devices/offline'} or path.startswith(('/api/devices/media/', '/api/devices/documents/', '/api/devices/')) and path.endswith('/screenshot-request') or ('/commands/' in path and path.endswith('/ack')):
             return await call_next(request)
-        if path.startswith('/api/devices/') and '/screenshot' in path:
-            return await call_next(request)
-    if path in protected_paths or path.startswith('/api/screenshots/') or path.startswith('/api/devices/'):
+    if path in protected_paths or path.startswith(('/api/config/', '/api/screenshots/', '/api/devices/')):
         token = request.cookies.get('ks_session')
         if not state.validate_session_token(token):
             if path == '/login':

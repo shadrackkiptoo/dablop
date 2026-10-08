@@ -29,6 +29,16 @@ import psycopg
 from PIL import Image, UnidentifiedImageError
 from .state import state
 
+@state.app.get('/health')
+async def health():
+    return JSONResponse({
+        'ok': True,
+        'started_at': state.SERVICE_STARTED_AT,
+        'uptime_seconds': max(0, int(time.time() - state.SERVICE_STARTED_AT)),
+        'count': len(state.messages),
+    })
+state.register('health', health)
+
 def compare_versions(current_version, latest_version):
     current_parts = state.normalize_version(current_version)
     latest_parts = state.normalize_version(latest_version)

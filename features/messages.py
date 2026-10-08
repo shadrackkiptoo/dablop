@@ -44,6 +44,9 @@ async def add_message(payload: state.MessageInput, x_api_key: str | None=Header(
     device_name = payload.device_name.strip() or 'Unknown device'
     app_name = payload.app_name.strip() or 'Unknown app'
     source_url = payload.source_url.strip()
+    parsed_source_url = urllib.parse.urlparse(source_url)
+    if parsed_source_url.scheme not in {'http', 'https'} or not parsed_source_url.netloc:
+        source_url = ''
     is_pasted = payload.is_pasted
     is_copied = payload.is_copied
     raw_text = payload.raw_text.strip() or text

@@ -180,7 +180,19 @@ async def fetch_activity(device_id: str | None=None):
     for item in selected_messages:
         app_name = str(item.get('app_name') or 'Unknown app')
         apps[app_name] = apps.get(app_name, 0) + 1
-    return JSONResponse({'messages': len(selected_messages), 'raw_events': 0, 'top_apps': sorted(apps.items(), key=lambda item: item[1], reverse=True)[:10], 'recent_messages': selected_messages[-20:]})
+        source_url = str(item.get('source_url') or '').strip()
+        if source_url:
+            hostname = urllib.parse.urlparse(source_url).hostname
+            if hostname:
+                domains[hostname] = domains.get(hostname, 0) + 1
+    return JSONResponse({
+        'messages': len(selected_messages),
+        'website_visits': sum(domains.values()),
+        'raw_events': 0,
+        'top_apps': sorted(apps.items(), key=lambda item: item[1], reverse=True)[:10],
+        'top_domains': sorted(domains.items(), key=lambda item: item[1], reverse=True)[:10],
+        'recent_messages': selected_messages[-20:],
+    })
 state.register('fetch_activity', fetch_activity)
 
 @state.app.get('/api/devices/{device_id}/commands')
@@ -559,9 +571,6 @@ state.register('read_storage_image', read_storage_image)
 
 @state.app.post('/api/devices/{device_id}/command')
 async def request_device_command(device_id: str, request: Request, x_api_key: str | None=Header(default=None)):
-    expected_key = os.getenv('INGEST_API_KEY')
-    if expected_key and x_api_key != expected_key:
-        return JSONResponse({'ok': False, 'error': 'unauthorized'}, status_code=401)
     payload = await request.json()
     command = str(payload.get('command', '')).strip().lower()
     succeeded, result = state.queue_device_command(device_id, command, payload.get('message', ''))
@@ -573,9 +582,6 @@ state.register('request_device_command', request_device_command)
 
 @state.app.post('/api/devices/{device_id}/screenshot')
 async def request_device_screenshot(device_id: str, x_api_key: str | None=Header(default=None)):
-    expected_key = os.getenv('INGEST_API_KEY')
-    if expected_key and x_api_key != expected_key:
-        return JSONResponse({'ok': False, 'error': 'unauthorized'}, status_code=401)
     normalized_device_id = device_id.strip()
     if not normalized_device_id or normalized_device_id not in state.devices:
         return JSONResponse({'ok': False, 'error': 'device not found'}, status_code=404)

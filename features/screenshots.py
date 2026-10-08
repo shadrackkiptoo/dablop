@@ -37,12 +37,12 @@ async def upload_device_screenshot(payload: state.ScreenshotInput, x_api_key: st
     device_id = payload.device_id.strip()
     screenshot_base64 = payload.screenshot_base64.strip()
     if not device_id or not screenshot_base64:
-        screenshot_statuses[device_id] = {'status': 'Failed', 'message': 'The client sent an empty screenshot.', 'updated_at': int(time.time() * 1000)}
+        state.screenshot_statuses[device_id] = {'status': 'Failed', 'message': 'The client sent an empty screenshot.', 'updated_at': int(time.time() * 1000)}
         return JSONResponse({'ok': False, 'error': 'invalid screenshot'}, status_code=400)
-    if device_id not in devices:
+    if device_id not in state.devices:
         return JSONResponse({'ok': False, 'error': 'device not found'}, status_code=404)
     if not state.DATABASE_URL or not state.SUPABASE_URL or (not state.SUPABASE_SERVICE_ROLE_KEY):
-        screenshot_statuses[device_id] = {'status': 'Failed', 'message': 'Storage configuration is missing on the server.', 'updated_at': int(time.time() * 1000)}
+        state.screenshot_statuses[device_id] = {'status': 'Failed', 'message': 'Storage configuration is missing on the server.', 'updated_at': int(time.time() * 1000)}
         return JSONResponse({'ok': False, 'error': 'screenshot storage unavailable'}, status_code=503)
     try:
         await asyncio.to_thread(state.save_screenshot, device_id, screenshot_base64)
@@ -51,8 +51,8 @@ async def upload_device_screenshot(payload: state.ScreenshotInput, x_api_key: st
         error_text = str(error)
         if isinstance(error, psycopg.Error):
             error_text = 'Database error while recording screenshot metadata.'
-        screenshot_statuses[device_id] = {'status': 'Failed', 'message': error_text[:240] or 'The screenshot could not be saved.', 'updated_at': int(time.time() * 1000)}
+        state.screenshot_statuses[device_id] = {'status': 'Failed', 'message': error_text[:240] or 'The screenshot could not be saved.', 'updated_at': int(time.time() * 1000)}
         return JSONResponse({'ok': False, 'error': 'screenshot storage unavailable'}, status_code=503)
-    screenshot_statuses[device_id] = {'status': 'Saved', 'message': 'Screenshot saved successfully.', 'updated_at': int(time.time() * 1000)}
+    state.screenshot_statuses[device_id] = {'status': 'Saved', 'message': 'Screenshot saved successfully.', 'updated_at': int(time.time() * 1000)}
     return JSONResponse({'ok': True})
 state.register('upload_device_screenshot', upload_device_screenshot)
