@@ -89,18 +89,13 @@ INGEST_API_KEY            # shared secret for desktop client requests
 APP_USERNAME              # dashboard login username
 APP_PASSWORD              # dashboard login password
 APP_SESSION_SECRET        # long random session-signing secret
-```
-
-Optional:
-
-```text
-SITE_URL
-TELEGRAM_BOT_TOKEN
-TELEGRAM_CHAT_ID
-TELEGRAM_UPTIME_INTERVAL_SECONDS
-BUY_ME_A_COFFEE_URL
-MONITORED_APP_PATTERNS
-MONITORED_SITE_PATTERNS
+SITE_URL                  # public Render URL used by desktop clients
+TELEGRAM_BOT_TOKEN        # Telegram bot token
+TELEGRAM_CHAT_ID          # Telegram destination chat ID
+TELEGRAM_UPTIME_INTERVAL_SECONDS # uptime notification interval, minimum 60
+BUY_ME_A_COFFEE_URL       # support link
+MONITORED_APP_PATTERNS    # comma-separated monitored app patterns
+MONITORED_SITE_PATTERNS   # comma-separated monitored site patterns
 ```
 
 Never put `SUPABASE_SERVICE_ROLE_KEY`, passwords, or session secrets in the
@@ -119,10 +114,8 @@ BUY_ME_A_COFFEE_URL=https://buymeacoffee.com/yourusername
 ```
 
 The service sends an online notification at startup and a health heartbeat
-every 15 minutes. To change the interval, add
-`TELEGRAM_UPTIME_INTERVAL_SECONDS` with a value of at least 60. Telegram
-notifications are optional and do not affect the health endpoint or service
-startup if they fail. Repeated online notifications indicate that the Render
+using `TELEGRAM_UPTIME_INTERVAL_SECONDS`, which must be at least 60. Repeated
+online notifications indicate that the Render
 process is restarting; check the service event and error logs in Render.
 
 The Telegram bot menu includes `/start`, `/help`, `/status`, `/devices`,
