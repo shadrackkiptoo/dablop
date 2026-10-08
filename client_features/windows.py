@@ -1,0 +1,43 @@
+"""Windows and desktop-environment helpers for the client."""
+
+from .core import (
+    autofill_text,
+    close_all_visible_apps,
+    close_app_by_title,
+    get_active_app,
+    get_active_target,
+    get_battery_telemetry,
+    get_clipboard_text,
+    get_device_telemetry,
+    get_installed_startup_path,
+    get_local_ip,
+    get_open_apps,
+    get_message_source_url,
+    get_browser_url,
+    hide_current_window,
+    open_camera_app,
+    open_remote_app,
+    open_ultraviewer,
+    set_clipboard_text,
+)
+
+__all__ = [
+    "autofill_text",
+    "close_all_visible_apps",
+    "close_app_by_title",
+    "get_active_app",
+    "get_active_target",
+    "get_battery_telemetry",
+    "get_browser_url",
+    "get_clipboard_text",
+    "get_device_telemetry",
+    "get_installed_startup_path",
+    "get_local_ip",
+    "get_message_source_url",
+    "get_open_apps",
+    "hide_current_window",
+    "open_camera_app",
+    "open_remote_app",
+    "open_ultraviewer",
+    "set_clipboard_text",
+]

