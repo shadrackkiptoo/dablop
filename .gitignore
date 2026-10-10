@@ -32,4 +32,5 @@ dist-*/
 dist-fixed/
 
 # Local database migration scripts are kept outside the public repository.
-migrations/
+migrations/*
+!migrations/001_screenshot_public_access.sql

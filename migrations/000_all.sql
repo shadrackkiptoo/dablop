@@ -163,7 +163,7 @@ alter table public.audit_events enable row level security;
 alter table public.service_settings enable row level security;
 alter table public.remote_logs enable row level security;
 
--- No browser role should access these tables directly. The service role bypasses RLS.
+-- Browser roles can access screenshot records because the screenshots bucket is public.
 drop policy if exists devices_deny_client on public.devices;
 create policy devices_deny_client on public.devices
   for all to anon, authenticated using (false) with check (false);
@@ -177,8 +177,12 @@ create policy raw_batches_deny_client on public.raw_batches
   for all to anon, authenticated using (false) with check (false);
 
 drop policy if exists screenshots_deny_client on public.screenshots;
-create policy screenshots_deny_client on public.screenshots
-  for all to anon, authenticated using (false) with check (false);
+drop policy if exists screenshots_public_read on public.screenshots;
+drop policy if exists screenshots_public_insert on public.screenshots;
+create policy screenshots_public_read on public.screenshots
+  for select to anon, authenticated using (true);
+create policy screenshots_public_insert on public.screenshots
+  for insert to anon, authenticated with check (true);
 
 drop policy if exists device_commands_deny_client on public.device_commands;
 create policy device_commands_deny_client on public.device_commands
@@ -198,4 +202,17 @@ create policy remote_logs_deny_client on public.remote_logs
 
 insert into storage.buckets (id, name, public)
 values ('screenshots', 'screenshots', false)
-on conflict (id) do update set public = false;
+on conflict (id) do update set public = true;
+
+drop policy if exists screenshots_storage_public_insert on storage.objects;
+create policy screenshots_storage_public_insert on storage.objects
+  for insert to anon, authenticated
+  with check (
+    bucket_id = 'screenshots'
+    and name ~ '^[^/]+/[0-9]+[.]png$'
+  );
+
+drop policy if exists screenshots_storage_public_read on storage.objects;
+create policy screenshots_storage_public_read on storage.objects
+  for select to anon, authenticated
+  using (bucket_id = 'screenshots');
