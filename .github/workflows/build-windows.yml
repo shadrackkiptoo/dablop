@@ -33,7 +33,7 @@ jobs:
 
       - name: Build executable
         shell: pwsh
-        run: .\build_client.ps1
+        run: .\build_client.ps1 -SkipVersionBump
 
       - name: Upload executable
         uses: actions/upload-artifact@v4
